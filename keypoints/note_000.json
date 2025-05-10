@@ -1,0 +1,19 @@
+{
+  "keypoints": [
+    {
+      "name": "head_center",
+      "x": 80,
+      "y": 130
+    },
+    {
+      "name": "stick_top",
+      "x": 90,
+      "y": 70
+    },
+    {
+      "name": "stick_bottom",
+      "x": 90,
+      "y": 130
+    }
+  ]
+}
