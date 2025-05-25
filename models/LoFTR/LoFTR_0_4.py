@@ -46,10 +46,7 @@ def visualize_matches(img0, img1, matched_keypoints, matched_targets, gt_targets
 
 # === Matching s LoFTR ===
 def match_keypoints_loftr(img0, img1):
-    model = kornia.feature.LoFTR(pretrained=None).eval().cuda()
-    # Načítame uložené váhy
-    state_dict = torch.load("loftr_outdoor.pth", map_location='cuda', weights_only=True)
-    model.load_state_dict(state_dict)
+    model = kornia.feature.LoFTR(pretrained='indoor').eval().cuda()
 
 
     input_dict = {"image0": img0, "image1": img1}
