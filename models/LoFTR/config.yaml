@@ -1,0 +1,10 @@
+defaults:
+  - override hydra/job_logging: disabled
+  - override hydra/hydra_logging: disabled
+
+train_data_path: ./dataset
+val_data_path: ./dataset
+image_size: 200
+batch_size: 16
+lr: 0.0001
+num_epochs: 20
