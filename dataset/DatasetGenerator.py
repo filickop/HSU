@@ -14,7 +14,7 @@ class DatasetGenerator:
 
     def generate(self, num_variants):
         if os.path.exists(self.output_keypoints_path) and len(os.listdir(self.output_image_dir)) >= num_variants:
-            print("Dataset už existuje, generovanie preskočené.")
+            print("Dataset už existuje, generovanie preskočené..")
             return
         # Načítaj základný obrázok
         base_img = cv2.imread(self.input_image)
