@@ -4,6 +4,9 @@ from dataset.Note.NotePairKeypointDataset import NotePairKeypointDataset
 from models.LoFTR.LoFTR import LoFTRRunner
 from models.SuperPointSuperGlue.SuperPointSuperGlueMatcher import SuperPointSuperGlueMatcher
 from dataset.DatasetGenerator import DatasetGenerator
+from dataloaders.glue import GlueDataset
+from models.ASpanFormer.aspanformer import ASpanFormerModel
+from evaluator import run_tests
 
 datasetGenerator = DatasetGenerator(
     [
@@ -41,7 +44,7 @@ datasetGenerator = DatasetGenerator(
 
 datasetGenerator.generate(100)
 
-developer = "MZ"
+developer = ""
 if developer == "MZ":
     matcher = SuperPointSuperGlueMatcher(
         'dataset/Lepidla/lepidla1/lepidla1.json',
@@ -62,3 +65,9 @@ elif developer == "PF":
 
     for i, batch in enumerate(dataloader):
         runner.run_batch(batch, output_path=f"foundKeypoints/matched_{i:03}.json")
+
+elif developer == "RZ":
+    model = ASpanFormerModel()
+    dataset = GlueDataset()
+    result = run_tests(model, dataset)
+    print(result)
