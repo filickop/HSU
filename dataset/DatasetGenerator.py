@@ -4,70 +4,93 @@ import os
 import json
 
 class DatasetGenerator:
-    def __init__(self, input_image, input_keypoints, output_image_dir, output_keypoints_path):
-        self.input_image = input_image
-        self.input_keypoints = input_keypoints
-        self.output_image_dir = output_image_dir
-        self.output_keypoints_path = output_keypoints_path
+    def __init__(self, input_images, input_keypoints_list, output_image_dirs, output_keypoints_paths):
+        self.input_images = input_images
+        self.input_keypoints_list = input_keypoints_list
+        self.output_image_dirs = output_image_dirs
+        self.output_keypoints_paths = output_keypoints_paths
 
-        os.makedirs(self.output_image_dir, exist_ok=True)
+        assert len(input_images) == len(input_keypoints_list) == len(output_image_dirs) == len(output_keypoints_paths), \
+            "Všetky vstupné a výstupné zoznamy musia mať rovnakú dĺžku."
+
+        for out_dir in self.output_image_dirs:
+            os.makedirs(out_dir, exist_ok=True)
 
     def generate(self, num_variants):
-        if os.path.exists(self.output_keypoints_path) and len(os.listdir(self.output_image_dir)) >= num_variants:
-            print("Dataset už existuje, generovanie preskočené.")
-            return
-        # Načítaj základný obrázok
-        base_img = cv2.imread(self.input_image)
-        if base_img is None:
-            raise FileNotFoundError(f"Obrázok '{self.input_image}' sa nenašiel.")
-        h, w = base_img.shape[:2]
-        center = (w // 2, h // 2)
+        for idx in range(len(self.input_images)):
+            input_image = self.input_images[idx]
+            input_keypoints = self.input_keypoints_list[idx]
+            output_image_dir = self.output_image_dirs[idx]
+            output_keypoints_path = self.output_keypoints_paths[idx]
 
-        # Načítaj základné keypointy
-        with open(self.input_keypoints, "r") as f:
-            base_kpts_data = json.load(f)
+            if os.path.exists(output_keypoints_path) and len(os.listdir(output_image_dir)) >= num_variants:
+                print(f"Dataset pre '{input_image}' už existuje, generovanie preskočené.")
+                continue
 
-        base_kpts = np.array([[kp["x"], kp["y"]] for kp in base_kpts_data["keypoints"]])
+            base_img = cv2.imread(input_image)
+            if base_img is None:
+                raise FileNotFoundError(f"Obrázok '{input_image}' sa nenašiel.")
+            h, w = base_img.shape[:2]
+            center = (w // 2, h // 2)
 
-        # Priprav pole pre všetky záznamy
-        all_entries = []
+            with open(input_keypoints, "r") as f:
+                base_kpts_data = json.load(f)
 
-        for i in range(num_variants):
-            # Vytvor kópiu obrázka
-            img = base_img.copy()
+            base_kpts = np.array([[kp['x'], kp['y']] for kp in base_kpts_data[0]['keypoints']])
+            all_entries = []
 
-            # Náhodné parametre
-            angle = np.random.uniform(-180, 180)
-            scale = np.random.uniform(0.5, 1.5)
-            tx = np.random.randint(-20, 20)
-            ty = np.random.randint(-20, 20)
+            for i in range(num_variants):
+                angle = np.random.uniform(-180, 180)
+                scale = np.random.uniform(0.5, 1.5)
+                tx = np.random.randint(-20, 20)
+                ty = np.random.randint(-20, 20)
 
-            # Transformácia
-            M = cv2.getRotationMatrix2D(center, angle, scale)
-            M[:, 2] += [tx, ty]
+                M_affine = cv2.getRotationMatrix2D(center, angle, scale)
+                M_affine[:, 2] += [tx, ty]
 
-            # Transformuj obrázok
-            transformed_img = cv2.warpAffine(img, M, (w, h), borderValue=(255, 255, 255))
+                H = np.vstack([M_affine, [0, 0, 1]])
 
-            # Transformuj keypointy
-            kpts_homo = np.hstack([base_kpts, np.ones((len(base_kpts), 1))])
-            transformed_kpts = (M @ kpts_homo.T).T
+                corners = np.array([
+                    [0, 0], [w - 1, 0], [w - 1, h - 1], [0, h - 1]
+                ], dtype=np.float32).reshape(-1, 1, 2)
+                transformed_corners = cv2.perspectiveTransform(corners, H)
 
-            # Ulož obrázok
-            img_name = f"note_{i:03d}.png"
-            img_path = os.path.join(self.output_image_dir, img_name)
-            rel_path = os.path.relpath(img_path, start=os.path.dirname(self.output_keypoints_path)).replace("\\", "/")
-            cv2.imwrite(img_path, transformed_img)
+                x_min, y_min = np.floor(transformed_corners.min(axis=0).squeeze()).astype(int)
+                x_max, y_max = np.ceil(transformed_corners.max(axis=0).squeeze()).astype(int)
 
-            # Pridaj záznam
-            entry = {
-                "path": rel_path,
-                "keypoints": [{"x": float(kp[0]), "y": float(kp[1])} for kp in transformed_kpts]
-            }
-            all_entries.append(entry)
+                new_w, new_h = x_max - x_min, y_max - y_min
 
-        # Ulož všetky záznamy do JSON
-        with open(self.output_keypoints_path, "w") as f:
-            json.dump(all_entries, f, indent=2)
+                offset = np.array([[1, 0, -x_min], [0, 1, -y_min], [0, 0, 1]])
+                H_shifted = offset @ H
 
-        print("✅ Dataset bol úspešne vygenerovaný vo forme zoznamu objektov.")
+                transformed_img = cv2.warpPerspective(base_img, H_shifted, (new_w, new_h), borderValue=(255, 255, 255))
+
+                kpts_homo = np.hstack([base_kpts, np.ones((len(base_kpts), 1))]).T
+                transformed_kpts_homo = H_shifted @ kpts_homo
+                transformed_kpts = (transformed_kpts_homo[:2] / transformed_kpts_homo[2]).T
+
+                # Zmenšenie alebo zväčšenie na požadovanú veľkosť
+                target_w, target_h = base_img.shape[:2]
+                resized_img = cv2.resize(transformed_img, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
+
+                scale_x = target_w / transformed_img.shape[1]
+                scale_y = target_h / transformed_img.shape[0]
+                transformed_kpts[:, 0] *= scale_x
+                transformed_kpts[:, 1] *= scale_y
+
+                img_name = f"{os.path.splitext(os.path.basename(input_image))[0]}_{i:03d}.png"
+                img_path = os.path.join(output_image_dir, img_name)
+                rel_path = os.path.relpath(img_path, start=os.path.dirname(output_keypoints_path)).replace("\\", "/")
+                cv2.imwrite(img_path, resized_img)
+
+                entry = {
+                    "path": rel_path,
+                    "keypoints": [{"x": float(kp[0]), "y": float(kp[1])} for kp in transformed_kpts]
+                }
+                all_entries.append(entry)
+
+            os.makedirs(os.path.dirname(output_keypoints_path), exist_ok=True)
+            with open(output_keypoints_path, "w") as f:
+                json.dump(all_entries, f, indent=2)
+
+            print(f"✅ Dataset pre '{input_image}' bol úspešne vygenerovaný.")
