@@ -5,6 +5,7 @@ from models.LoFTR.LoFTR import LoFTRRunner
 from models.SuperPointSuperGlue.SuperPointSuperGlueMatcher import SuperPointSuperGlueMatcher
 from dataset.DatasetGenerator import DatasetGenerator
 from dataloaders.glue import GlueDataset
+from dataloaders.json_dataset import JsonDataset
 from models.ASpanFormer.aspanformer import ASpanFormerModel
 from evaluator import run_tests
 
@@ -44,7 +45,7 @@ datasetGenerator = DatasetGenerator(
     add_noise=True)
 
 datasetGenerator.generate(100)
-developer = "PF"
+developer = ""
 if developer == "MZ":
     model = SuperPointSuperGlueMatcher(
         'dataset/Lepidla/lepidla1/keypoints/lepidla1.json',
@@ -84,7 +85,23 @@ elif developer == "PF":
     for i, batch in enumerate(dataloader):
         runner.run_batch(batch)
 elif developer == "RZ":
+    # model = SuperPointSuperGlueMatcher(
+    #     'dataset/Lepidla/lepidla1/keypoints/lepidla1.json',
+    #     'dataset/Lepidla/lepidla1/lepidla1.jpg',)
+    # model = LoFTRRunner()
     model = ASpanFormerModel()
-    dataset = GlueDataset()
+
+    # dataset = GlueDataset()
+    # dataset = JsonDataset(
+    #     json_path="dataset/Note/keypoints/note_keypoints.json",
+    #     image_dir="dataset/Note/images",
+    #     long_dim=256,
+    # )
+    dataset = JsonDataset(
+        json_path="dataset/Lepidla/lepidla1/keypoints/lepidla1.json",
+        image_dir="dataset/Lepidla/lepidla1/images",
+        long_dim=1024,
+    )
+
     result = run_tests(model, dataset)
     print(result)
