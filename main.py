@@ -43,16 +43,18 @@ datasetGenerator = DatasetGenerator(
     ])
 
 datasetGenerator.generate(100)
-
 developer = ""
 if developer == "MZ":
-    matcher = SuperPointSuperGlueMatcher(
-        'dataset/Lepidla/lepidla1/lepidla1.json',
+    model = SuperPointSuperGlueMatcher(
+        'dataset/Lepidla/lepidla1/keypoints/lepidla1.json',
         'dataset/Lepidla/lepidla1/lepidla1.jpg',)
 
-    img2, mkpt0, mkpt1 = matcher.match(4)
-    mkpts0_0, mkpts0_1 = matcher.select_nearest_keypoint(mkpt0, mkpt1, (600, 595))
-    matcher.visualize(img2, mkpts0_0, mkpts0_1)
+    # img2, mkpt0, mkpt1 = matcher.match(4)
+    # mkpts0_0, mkpts0_1 = matcher.select_nearest_keypoint(mkpt0, mkpt1, (600, 595))
+    # matcher.visualize(img2, mkpts0_0, mkpts0_1)
+    dataset = GlueDataset()
+    result = run_tests(model, dataset)
+    print(result)
 
 elif developer == "PF":
     dataset = NotePairKeypointDataset(
