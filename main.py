@@ -1,6 +1,6 @@
 from torch.utils.data import DataLoader
 
-from dataset.Note.NotePairKeypointDataset import NotePairKeypointDataset
+from dataset.PairKeypointDataset import PairKeypointDataset
 from models.LoFTR.LoFTR import LoFTRRunner
 from models.SuperPointSuperGlue.SuperPointSuperGlueMatcher import SuperPointSuperGlueMatcher
 from dataset.DatasetGenerator import DatasetGenerator
@@ -40,10 +40,11 @@ datasetGenerator = DatasetGenerator(
         'dataset/Lepidla/lepidla3/keypoints/lepidla3.json',
         'dataset/Lepidla/lepidla4/keypoints/lepidla4.json',
         'dataset/Lepidla/lepidla5/keypoints/lepidla5.json'
-    ])
+    ],
+    add_noise=True)
 
 datasetGenerator.generate(100)
-developer = ""
+developer = "PF"
 if developer == "MZ":
     model = SuperPointSuperGlueMatcher(
         'dataset/Lepidla/lepidla1/keypoints/lepidla1.json',
@@ -57,17 +58,31 @@ if developer == "MZ":
     print(result)
 
 elif developer == "PF":
-    dataset = NotePairKeypointDataset(
+    dataset = PairKeypointDataset(
+        ref_img="dataset/Note",
+        ref_json="dataset/Note/note_000.json",
         json_path="dataset/Note/keypoints/note_keypoints.json",
         image_dir="dataset/Note/images"
     )
 
+    # dataset = PairKeypointDataset(
+    #     ref_img='dataset/Lepidla/lepidla1',
+    #     ref_json='dataset/Lepidla/lepidla1/lepidla1.json',
+    #     json_path="dataset/Lepidla/lepidla1/keypoints/lepidla1.json",
+    #     image_dir="dataset/Lepidla/lepidla1/images"
+    # )
+
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+
     runner = LoFTRRunner()
 
-    for i, batch in enumerate(dataloader):
-        runner.run_batch(batch, output_path=f"foundKeypoints/matched_{i:03}.json")
+    # dataset2 = GlueDataset()
+    #
+    # result = run_tests(runner, dataset2)
+    # print(result)
 
+    for i, batch in enumerate(dataloader):
+        runner.run_batch(batch)
 elif developer == "RZ":
     model = ASpanFormerModel()
     dataset = GlueDataset()

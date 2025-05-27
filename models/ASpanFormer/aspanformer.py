@@ -22,7 +22,7 @@ class ASpanFormerModel(KeypointModel):
         config.merge_from_file(self.CONFIG_PATH)
         _config = lower_config(config)
         self.matcher = ASpanFormer(config=_config['aspan'])
-        state_dict = torch.load(self.WEIGHTS_PATH, map_location='cpu')['state_dict']
+        state_dict = torch.load(self.WEIGHTS_PATH, map_location='cpu', weights_only=False)['state_dict']
         self.matcher.load_state_dict(state_dict,strict=False)
         self.matcher.cuda()
         self.matcher.eval()

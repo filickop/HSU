@@ -4,11 +4,12 @@ import os
 import json
 
 class DatasetGenerator:
-    def __init__(self, input_images, input_keypoints_list, output_image_dirs, output_keypoints_paths):
+    def __init__(self, input_images, input_keypoints_list, output_image_dirs, output_keypoints_paths, add_noise):
         self.input_images = input_images
         self.input_keypoints_list = input_keypoints_list
         self.output_image_dirs = output_image_dirs
         self.output_keypoints_paths = output_keypoints_paths
+        self.add_noise = add_noise
 
         assert len(input_images) == len(input_keypoints_list) == len(output_image_dirs) == len(output_keypoints_paths), \
             "Všetky vstupné a výstupné zoznamy musia mať rovnakú dĺžku."
@@ -81,11 +82,21 @@ class DatasetGenerator:
                 img_name = f"{os.path.splitext(os.path.basename(input_image))[0]}_{i:03d}.png"
                 img_path = os.path.join(output_image_dir, img_name)
                 rel_path = os.path.relpath(img_path, start=os.path.dirname(output_keypoints_path)).replace("\\", "/")
-                cv2.imwrite(img_path, resized_img)
+
+                if (self.add_noise):
+                    final_img, final_kps = self._add_stylized_noise(resized_img, transformed_kpts)
+                else:
+                    final_img = resized_img
+                    final_kps = transformed_kpts
+
+                cv2.imwrite(img_path, final_img)
+
+
+
 
                 entry = {
                     "path": rel_path,
-                    "keypoints": [{"x": float(kp[0]), "y": float(kp[1])} for kp in transformed_kpts]
+                    "keypoints": [{"x": float(kp[0]), "y": float(kp[1])} for kp in final_kps]
                 }
                 all_entries.append(entry)
 
@@ -94,3 +105,52 @@ class DatasetGenerator:
                 json.dump(all_entries, f, indent=2)
 
             print(f"✅ Dataset pre '{input_image}' bol úspešne vygenerovaný.")
+
+    def _add_stylized_noise(self, image, keypoints):
+        noisy = image.copy().astype(np.float32)
+        kps = keypoints.copy()
+
+        h, w = noisy.shape[:2]
+
+        # 1. Random brightness change (does NOT affect keypoints)
+        if np.random.rand() < 0.5:
+            brightness = np.random.uniform(0.6, 1.4)
+            noisy *= brightness
+
+        # 2. Random dark/bright dots (does NOT affect keypoints)
+        if np.random.rand() < 0.5:
+            for _ in range(np.random.randint(100, 500)):
+                x = np.random.randint(0, w)
+                y = np.random.randint(0, h)
+                color = np.random.choice([0, 255])
+                noisy[y, x] = color
+
+        # 3. Asymmetric stretch (scaleX ≠ scaleY)
+        if np.random.rand() < 0.5:
+            scale_x = np.random.uniform(0.7, 1.3)
+            scale_y = np.random.uniform(0.7, 1.3)
+
+            # Resize image
+            new_w, new_h = int(w * scale_x), int(h * scale_y)
+            noisy = cv2.resize(noisy, (new_w, new_h))
+            noisy = cv2.resize(noisy, (w, h))  # Resize back
+
+            # Update keypoints (as if they were scaled and then rescaled back)
+            kps[:, 0] *= scale_x
+            kps[:, 1] *= scale_y
+            kps[:, 0] *= w / new_w
+            kps[:, 1] *= h / new_h
+
+        # 4. Shear (horizontal)
+        if np.random.rand() < 0.3:
+            dx = np.random.randint(-10, 10)
+            shear_matrix = np.float32([[1, dx / h, 0], [0, 1, 0]])
+            noisy = cv2.warpAffine(noisy, shear_matrix, (w, h), borderValue=255)
+
+            # Apply affine transform to keypoints
+            ones = np.ones((kps.shape[0], 1))
+            kps_homo = np.hstack([kps, ones])
+            kps = (shear_matrix @ kps_homo.T).T
+
+        # Return both
+        return np.clip(noisy, 0, 255).astype(np.uint8), kps

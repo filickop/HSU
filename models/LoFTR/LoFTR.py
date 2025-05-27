@@ -1,3 +1,5 @@
+import sys
+
 import torch
 import kornia
 import matplotlib.pyplot as plt
@@ -61,6 +63,7 @@ class LoFTRRunner(KeypointModel):
         for idx, (x0, y0) in enumerate(kp0):
             ref_coords = np.array([x0, y0])
             if len(mkpts0) == 0:
+                print(f"kp_{idx} - Nenájdené | Skutočné: {kp1[idx]} | Chyba: {999999999999} px")
                 continue
             dists = np.linalg.norm(mkpts0 - ref_coords, axis=1)
             min_idx = np.argmin(dists)
@@ -75,7 +78,7 @@ class LoFTRRunner(KeypointModel):
             matched_names.append(f"kp_{idx}")
             print(f"kp_{idx} - Nájdené: {matched_coords} | Skutočné: {gt_coords} | Chyba: {error:.2f} px")
 
-        #self.visualize_matches(img0, img1, matched_ref_points, matched_target_points, gt_coords_list, matched_names)
+        self.visualize_matches(img0, img1, matched_ref_points, matched_target_points, gt_coords_list, matched_names)
 
         if output_path:
             self.save_keypoints(output_path, matched_names, matched_target_points)
