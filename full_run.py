@@ -48,7 +48,7 @@ datasetGenerator.generate(1000)
 
 glue_dataset = GlueDataset()
 note_dataset = JsonDataset(
-        json_path="dataset/Note/note_000.json",
+        json_path="dataset/Note/keypoints/note_keypoints.json",
         image_dir="dataset/Note/images",
         long_dim=200,
     )
