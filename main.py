@@ -75,7 +75,7 @@ elif developer == "PF":
 
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
 
-    runner = LoFTRRunner()
+    runner = LoFTRRunner(pretrained='indoor')
 
     # dataset2 = GlueDataset()
     #

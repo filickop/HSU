@@ -10,9 +10,9 @@ import json
 from evaluator import KeypointModel
 
 class LoFTRRunner(KeypointModel):
-    def __init__(self, device='cuda'):
+    def __init__(self, device='cuda', pretrained='indoor'):
         self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
-        self.model = kornia.feature.LoFTR(pretrained='indoor').eval().to(self.device)
+        self.model = kornia.feature.LoFTR(pretrained=pretrained).eval().to(self.device)
 
     def find_matching_points(self, img1, img2):
         return self.match_keypoints_loftr(img1, img2)

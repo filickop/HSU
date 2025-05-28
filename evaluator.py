@@ -75,7 +75,7 @@ def calc_histogram_from_metric(metrics, bins, point_count):
         return hist
     return np.histogram(metrics, bins)[0]
 
-def run_tests(model: KeypointModel, dataset: Dataset, *, bins: np.ndarray = BINS) -> TestResults:
+def run_tests(model: KeypointModel, dataset: Dataset, *, bins: np.ndarray = BINS, print_output=True) -> TestResults:
     results = TestResults(
         np.zeros_like(bins, dtype=int),
         np.zeros_like(bins, dtype=int),
@@ -91,8 +91,11 @@ def run_tests(model: KeypointModel, dataset: Dataset, *, bins: np.ndarray = BINS
         if i == dataset_size: break
 
         if i % 10 == 0:
-            print(f"{i+1:5}/{dataset_size}" , end="")
-        print(".", end="", flush=True)
+            if print_output:
+                print(f"{i+1:5}/{dataset_size}" , end="")
+
+        if print_output:
+            print(".", end="", flush=True)
 
         match_start = time.time()
         corr1, corr2 = model.find_matching_points(data["image1"], data["image2"])
@@ -110,7 +113,8 @@ def run_tests(model: KeypointModel, dataset: Dataset, *, bins: np.ndarray = BINS
 
         if i % 10 == 9:
             duration = time.time() - start
-            print(f" (total {duration / 10:.2f} s/test, matching {total_match_duration / 10:.2f} s/test)")
+            if print_output:
+                print(f" (total {duration / 10:.2f} s/test, matching {total_match_duration / 10:.2f} s/test)")
             total_match_duration = 0
             start = time.time()
     print()
