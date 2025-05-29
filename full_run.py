@@ -45,7 +45,7 @@ datasetGenerator = DatasetGenerator(
     ],
     add_noise=True)
 
-datasetGenerator.generate(1000)
+datasetGenerator.generate(10)
 
 glue_dataset = GlueDataset(
     long_dim=1024,
@@ -89,11 +89,119 @@ def run_tests_all_datasets(name, model):
 #---------------------------------------------------------------------------------------
 #SuperPoint testy START
 #---------------------------------------------------------------------------------------
-if  1 == 2:
-    run_tests_all_datasets("SuperPoint",
-                           SuperPointSuperGlueMatcher(
-                               'dataset/Lepidla/lepidla1/keypoints/lepidla1.json',
-                               'dataset/Lepidla/lepidla1/lepidla1.jpg'))
+run_tests_all_datasets(
+    "SuperPoint_indoor_default",
+    SuperPointSuperGlueMatcher({
+        'superpoint': {
+            'descriptor_dim': 256,
+            'nms_radius': 4,
+            'keypoint_threshold': 0.005,
+            'max_keypoints': -1,
+        },
+        'superglue': {
+            'descriptor_dim': 256,
+            'weights': 'indoor',
+            'keypoint_encoder': [32, 64, 128, 256],
+            'GNN_layers': ['self', 'cross'] * 9,
+            'sinkhorn_iterations': 100,
+            'match_threshold': 0.2,
+        }
+    }))
+
+run_tests_all_datasets(
+    "SuperPoint_outdoor_default",
+    SuperPointSuperGlueMatcher({
+        'superpoint': {
+            'descriptor_dim': 256,
+            'nms_radius': 4,
+            'keypoint_threshold': 0.005,
+            'max_keypoints': -1,
+        },
+        'superglue': {
+            'descriptor_dim': 256,
+            'weights': 'outdoor',
+            'keypoint_encoder': [32, 64, 128, 256],
+            'GNN_layers': ['self', 'cross'] * 9,
+            'sinkhorn_iterations': 100,
+            'match_threshold': 0.2,
+        }
+    }))
+
+run_tests_all_datasets(
+    "SuperPoint_indoor_quality",
+    SuperPointSuperGlueMatcher({
+        'superpoint': {
+            'descriptor_dim': 256,
+            'nms_radius': 5,           # silnejšie potláčanie susedov
+            'keypoint_threshold': 0.01,# detekuj len spoľahlivé body
+            'max_keypoints': -1,
+        },
+        'superglue': {
+            'descriptor_dim': 256,
+            'weights': 'indoor',
+            'keypoint_encoder': [32, 64, 128, 256],
+            'GNN_layers': ['self', 'cross'] * 6,   # rýchlejšie
+            'sinkhorn_iterations': 50,             # rýchlejšie
+            'match_threshold': 0.3,
+        }
+    }))
+
+run_tests_all_datasets(
+    "SuperPoint_outdoor_quality",
+    SuperPointSuperGlueMatcher({
+        'superpoint': {
+            'descriptor_dim': 256,
+            'nms_radius': 5,           # silnejšie potláčanie susedov
+            'keypoint_threshold': 0.01,# detekuj len spoľahlivé body
+            'max_keypoints': -1,
+        },
+        'superglue': {
+            'descriptor_dim': 256,
+            'weights': 'outdoor',
+            'keypoint_encoder': [32, 64, 128, 256],
+            'GNN_layers': ['self', 'cross'] * 6,   # rýchlejšie
+            'sinkhorn_iterations': 50,             # rýchlejšie
+            'match_threshold': 0.3,
+        }
+    }))
+
+run_tests_all_datasets(
+    "SuperPoint_indoor_quantity",
+    SuperPointSuperGlueMatcher({
+        'superpoint': {
+            'descriptor_dim': 256,
+            'nms_radius': 3,             # viac bodov v hustých oblastiach
+            'keypoint_threshold': 0.001, # detekuj aj slabé body
+            'max_keypoints': -1,
+        },
+        'superglue': {
+            'descriptor_dim': 256,
+            'weights': 'indoor',
+            'keypoint_encoder': [64, 128, 256, 256],  # hlbší encoder
+            'GNN_layers': ['self', 'cross'] * 12,     # robustnejšie učenie vzťahov
+            'sinkhorn_iterations': 150,               # viac iterácií → lepšia optimalizácia
+            'match_threshold': 0.1,
+        }
+    }))
+
+run_tests_all_datasets(
+    "SuperPoint_outdoor_quantity",
+    SuperPointSuperGlueMatcher({
+        'superpoint': {
+            'descriptor_dim': 256,
+            'nms_radius': 3,             # viac bodov v hustých oblastiach
+            'keypoint_threshold': 0.001, # detekuj aj slabé body
+            'max_keypoints': -1,
+        },
+        'superglue': {
+            'descriptor_dim': 256,
+            'weights': 'outdoor',
+            'keypoint_encoder': [64, 128, 256, 256],  # hlbší encoder
+            'GNN_layers': ['self', 'cross'] * 12,     # robustnejšie učenie vzťahov
+            'sinkhorn_iterations': 150,               # viac iterácií → lepšia optimalizácia
+            'match_threshold': 0.1,
+        }
+    }))
 #---------------------------------------------------------------------------------------
 #SuperPoint testy END
 #---------------------------------------------------------------------------------------
