@@ -70,17 +70,17 @@ Path("histograms").mkdir(parents=True, exist_ok=True)
 
 def run_tests_all_datasets(name, model):
     print(f"{name} Note test")
-    result = run_tests(model, note_dataset, print_output=True)
+    result = run_tests(model, note_dataset, print_output=False)
     result.save(f"histograms/{name}_Note.npz")
     print(result)
 
     print(f"{name} Glue test")
-    result = run_tests(model, glue_dataset, print_output=True)
+    result = run_tests(model, glue_dataset, print_output=False)
     result.save(f"histograms/{name}_Glue.npz")
     print(result)
 
     print(f"{name} Lepidla test")
-    result = run_tests(model, lepidla_dataset, print_output=True)
+    result = run_tests(model, lepidla_dataset, print_output=False)
     result.save(f"histograms/{name}_Lepidla.npz")
     print(result)
 
