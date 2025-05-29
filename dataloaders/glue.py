@@ -5,10 +5,9 @@ from torch.utils.data import Dataset
 import cv2
 
 class GlueDataset(Dataset):
-    LONG_DIM = 1024
     ROOT_DIR = "dataset/Glue"
     NPZ_PATH = "dataset/Glue/data.npz"
-    def __init__(self, *, device=None):
+    def __init__(self, *, device=None, long_dim=1024):
         super().__init__()
 
         self.data = np.load(self.NPZ_PATH)
@@ -17,6 +16,7 @@ class GlueDataset(Dataset):
         if device is None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
+        self.long_dim = long_dim
 
     def __len__(self):
         # return self.img_count * self.img_count
@@ -27,7 +27,7 @@ class GlueDataset(Dataset):
         points = self.data['points'][idx]
 
         h, w = img.shape[:2]
-        scale = self.LONG_DIM / max(h, w)
+        scale = self.long_dim / max(h, w)
         img = cv2.resize(img, (int(w * scale), int(h * scale)))
         points *= scale
         img_tensor = torch.from_numpy(img/255.)[None,None].to(self.device).float()
