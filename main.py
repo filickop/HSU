@@ -98,8 +98,8 @@ elif developer == "RZ":
     #     long_dim=256,
     # )
     dataset = JsonDataset(
-        json_path="dataset/Lepidla/lepidla1/keypoints/lepidla1.json",
-        image_dir="dataset/Lepidla/lepidla1/images",
+        json_path=[f"dataset/Lepidla/lepidla{x}/keypoints/lepidla{x}.json" for x in range(1, 6)],
+        image_dir=[f"dataset/Lepidla/lepidla{x}/images" for x in range(1, 6)],
         long_dim=1024,
     )
 
