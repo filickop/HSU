@@ -14,15 +14,30 @@ from src.utils.misc import lower_config
 
 
 class ASpanFormerModel(KeypointModel):
-    CONFIG_PATH = "models/ASpanFormer/aspanformer/configs/aspan/outdoor/aspan_test.py"
-    WEIGHTS_PATH = "models/ASpanFormer/aspanformer/weights/outdoor.ckpt"
+    CONFIGS = {
+        "outdoor": {
+            "weights": "models/ASpanFormer/aspanformer/weights/outdoor.ckpt",
+            "config": "models/ASpanFormer/aspanformer/configs/aspan/outdoor/aspan_test.py",
+        },
+        "indoor": {
+            "weights": "models/ASpanFormer/aspanformer/weights/indoor.ckpt",
+            "config": "models/ASpanFormer/aspanformer/configs/aspan/indoor/aspan_test.py",
+        },
+    }
 
-    def __init__(self):
+    def __init__(self, config_type: str, *, threshold: float | None = None):
+        if config_type not in self.CONFIGS:
+            config_types = ", ".join(repr(key) for key in self.CONFIGS.keys())
+            raise ValueError(f"Unknown config_type {config_type!r} should be one of {config_types}")
+
         config = get_cfg_defaults()
-        config.merge_from_file(self.CONFIG_PATH)
+        config.merge_from_file(self.CONFIGS[config_type]["config"])
         _config = lower_config(config)
+        if threshold is not None:
+            _config["aspan"]["match_coarse"]["thr"] = threshold
+
         self.matcher = ASpanFormer(config=_config['aspan'])
-        state_dict = torch.load(self.WEIGHTS_PATH, map_location='cpu', weights_only=False)['state_dict']
+        state_dict = torch.load(self.CONFIGS[config_type]["weights"], map_location='cpu', weights_only=False)['state_dict']
         self.matcher.load_state_dict(state_dict,strict=False)
         self.matcher.cuda()
         self.matcher.eval()

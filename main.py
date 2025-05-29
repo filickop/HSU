@@ -89,7 +89,7 @@ elif developer == "RZ":
     #     'dataset/Lepidla/lepidla1/keypoints/lepidla1.json',
     #     'dataset/Lepidla/lepidla1/lepidla1.jpg',)
     # model = LoFTRRunner()
-    model = ASpanFormerModel()
+    model = ASpanFormerModel("outdoor")
 
     # dataset = GlueDataset()
     # dataset = JsonDataset(
