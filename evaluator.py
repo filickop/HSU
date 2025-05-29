@@ -89,8 +89,6 @@ def run_tests(model: KeypointModel, dataset: Dataset, *, bins: np.ndarray = BINS
     start = time.time()
     total_match_duration = 0.0
     for i, data in enumerate(dataset):
-        if i == dataset_size: break
-
         if i % 10 == 0:
             if print_output:
                 print(f"{i+1:5}/{dataset_size}" , end="")
@@ -118,5 +116,7 @@ def run_tests(model: KeypointModel, dataset: Dataset, *, bins: np.ndarray = BINS
                 print(f" (total {duration / 10:.2f} s/test, matching {total_match_duration / 10:.2f} s/test)")
             total_match_duration = 0
             start = time.time()
+        if i + 1 == dataset_size: break
+
     print()
     return results
