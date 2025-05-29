@@ -22,6 +22,13 @@ class TestResults:
     weighted_metric_histogram: np.ndarray
     transform_metric_histogram: np.ndarray
 
+    def save(self, path):
+        np.savez(path,
+                 nearest=self.nearest_metric_histogram,
+                 weighted=self.weighted_metric_histogram,
+                 transform=self.transform_metric_histogram,
+            )
+
 
 @dataclass
 class Metrics:

@@ -8,6 +8,7 @@ from dataset.DatasetGenerator import DatasetGenerator
 from dataloaders.glue import GlueDataset
 from models.ASpanFormer.aspanformer import ASpanFormerModel
 from evaluator import run_tests
+from pathlib import Path
 
 datasetGenerator = DatasetGenerator(
     [
@@ -46,88 +47,53 @@ datasetGenerator = DatasetGenerator(
 
 datasetGenerator.generate(1000)
 
-glue_dataset = GlueDataset()
+glue_dataset = GlueDataset(
+    long_dim=1024,
+    dataset_size=1000,
+)
 note_dataset = JsonDataset(
-        json_path="dataset/Note/keypoints/note_keypoints.json",
-        image_dir="dataset/Note/images",
-        long_dim=200,
-    )
+    json_path="dataset/Note/keypoints/note_keypoints.json",
+    image_dir="dataset/Note/images",
+    long_dim=200,
+    dataset_size=1000,
+)
+
+lepidla_dataset = JsonDataset(
+    json_path=[f"dataset/Lepidla/lepidla{x}/keypoints/lepidla{x}.json" for x in range(1, 6)],
+    image_dir=[f"dataset/Lepidla/lepidla{x}/images" for x in range(1, 6)],
+    long_dim=1024,
+    dataset_size=5000,
+)
 
 
-lepidla1_dataset = JsonDataset(
-        json_path="dataset/Lepidla/lepidla1/keypoints/lepidla1.json",
-        image_dir="dataset/Lepidla/lepidla1/images",
-        long_dim=1024,
-    )
+Path("histograms").mkdir(parents=True, exist_ok=True)
 
-lepidla2_dataset = JsonDataset(
-        json_path="dataset/Lepidla/lepidla2/keypoints/lepidla2.json",
-        image_dir="dataset/Lepidla/lepidla2/images",
-        long_dim=1024,
-    )
+def run_tests_all_datasets(name, model):
+    print(f"{name} Note test")
+    result = run_tests(model, note_dataset, print_output=True)
+    result.save(f"histograms/{name}_Note.npz")
+    print(result)
 
-lepidla3_dataset = JsonDataset(
-        json_path="dataset/Lepidla/lepidla3/keypoints/lepidla3.json",
-        image_dir="dataset/Lepidla/lepidla3/images",
-        long_dim=1024,
-    )
+    print(f"{name} Glue test")
+    result = run_tests(model, glue_dataset, print_output=True)
+    result.save(f"histograms/{name}_Glue.npz")
+    print(result)
 
-lepidla4_dataset = JsonDataset(
-        json_path="dataset/Lepidla/lepidla4/keypoints/lepidla4.json",
-        image_dir="dataset/Lepidla/lepidla4/images",
-        long_dim=1024,
-    )
-
-lepidla5_dataset = JsonDataset(
-        json_path="dataset/Lepidla/lepidla5/keypoints/lepidla5.json",
-        image_dir="dataset/Lepidla/lepidla5/images",
-        long_dim=1024,
-    )
+    print(f"{name} Lepidla test")
+    result = run_tests(model, lepidla_dataset, print_output=True)
+    result.save(f"histograms/{name}_Lepidla.npz")
+    print(result)
 
 
-#MZ dorob ako sa ma toto pouzivat vsetky pripady ake chces
-superpoint_model = SuperPointSuperGlueMatcher(
-    'dataset/Lepidla/lepidla1/keypoints/lepidla1.json',
-    'dataset/Lepidla/lepidla1/lepidla1.jpg',)
-
-
-loftr_indoor_model = LoFTRRunner(pretrained='indoor')
-loftr_outdoor_model = LoFTRRunner(pretrained='outdoor')
-
-aspanformer_model = ASpanFormerModel()
 
 #---------------------------------------------------------------------------------------
 #SuperPoint testy START
 #---------------------------------------------------------------------------------------
 if  1 == 2:
-    print('SuperPoint_Note_test')
-    result = run_tests(superpoint_model, note_dataset, print_output=False)
-    print(result)
-
-    print('SuperPoint_Glue_test')
-    result = run_tests(superpoint_model, glue_dataset, print_output=False)
-    print(result)
-
-    print('SuperPoint_Lepidla1_test')
-    result = run_tests(superpoint_model, lepidla1_dataset, print_output=False)
-    print(result)
-
-    print('SuperPoint_Lepidla2_test')
-    result = run_tests(superpoint_model, lepidla2_dataset, print_output=False)
-    print(result)
-
-    print('SuperPoint_Lepidla3_test')
-    result = run_tests(superpoint_model, lepidla3_dataset, print_output=False)
-    print(result)
-
-    print('SuperPoint_Lepidla4_test')
-    result = run_tests(superpoint_model, lepidla4_dataset, print_output=False)
-    print(result)
-
-    print('SuperPoint_Lepidla5_test')
-    result = run_tests(superpoint_model, lepidla5_dataset, print_output=False)
-    print(result)
-
+    run_tests_all_datasets("SuperPoint",
+                           SuperPointSuperGlueMatcher(
+                               'dataset/Lepidla/lepidla1/keypoints/lepidla1.json',
+                               'dataset/Lepidla/lepidla1/lepidla1.jpg'))
 #---------------------------------------------------------------------------------------
 #SuperPoint testy END
 #---------------------------------------------------------------------------------------
@@ -135,62 +101,8 @@ if  1 == 2:
 #---------------------------------------------------------------------------------------
 #LoFTR testy START
 #---------------------------------------------------------------------------------------
-print('LoFTR_indoor_Note_test')
-result = run_tests(loftr_indoor_model, note_dataset, print_output=False)
-print(result)
-
-print('LoFTR_indoor_Glue_test')
-result = run_tests(loftr_indoor_model, glue_dataset, print_output=False)
-print(result)
-
-print('LoFTR_indoor_Lepidla1_test')
-result = run_tests(loftr_indoor_model, lepidla1_dataset, print_output=False)
-print(result)
-
-print('LoFTR_indoor_Lepidla2_test')
-result = run_tests(loftr_indoor_model, lepidla2_dataset, print_output=False)
-print(result)
-
-print('LoFTR_indoor_Lepidla3_test')
-result = run_tests(loftr_indoor_model, lepidla3_dataset, print_output=False)
-print(result)
-
-print('LoFTR_indoor_Lepidla4_test')
-result = run_tests(loftr_indoor_model, lepidla4_dataset, print_output=False)
-print(result)
-
-print('LoFTR_indoor_Lepidla5_test')
-result = run_tests(loftr_indoor_model, lepidla5_dataset, print_output=False)
-print(result)
-
-print('LoFTR_outdoor_Note_test')
-result = run_tests(loftr_outdoor_model, note_dataset, print_output=False)
-print(result)
-
-print('LoFTR_outdoor_Glue_test')
-result = run_tests(loftr_outdoor_model, glue_dataset, print_output=False)
-print(result)
-
-print('LoFTR_outdoor_Lepidla1_test')
-result = run_tests(loftr_outdoor_model, lepidla1_dataset, print_output=False)
-print(result)
-
-print('LoFTR_outdoor_Lepidla2_test')
-result = run_tests(loftr_outdoor_model, lepidla2_dataset, print_output=False)
-print(result)
-
-print('LoFTR_outdoor_Lepidla3_test')
-result = run_tests(loftr_outdoor_model, lepidla3_dataset, print_output=False)
-print(result)
-
-print('LoFTR_outdoor_Lepidla4_test')
-result = run_tests(loftr_outdoor_model, lepidla4_dataset, print_output=False)
-print(result)
-
-print('LoFTR_outdoor_Lepidla5_test')
-result = run_tests(loftr_outdoor_model, lepidla5_dataset, print_output=False)
-print(result)
-
+run_tests_all_datasets('LoFTR_indoor', LoFTRRunner(pretrained='indoor'))
+run_tests_all_datasets('LoFTR_outdoor', LoFTRRunner(pretrained='outdoor'))
 #---------------------------------------------------------------------------------------
 #LoFTR testy END
 #---------------------------------------------------------------------------------------
@@ -198,38 +110,8 @@ print(result)
 #---------------------------------------------------------------------------------------
 #AspanFormer testy START
 #---------------------------------------------------------------------------------------
-
-print('AspanFormer_Note_test')
-result = run_tests(aspanformer_model, note_dataset, print_output=False)
-print(result)
-
-print('AspanFormer_Glue_test')
-result = run_tests(aspanformer_model, glue_dataset, print_output=False)
-print(result)
-
-print('AspanFormer_Lepidla1_test')
-result = run_tests(aspanformer_model, lepidla1_dataset, print_output=False)
-print(result)
-
-print('AspanFormer_Lepidla2_test')
-result = run_tests(aspanformer_model, lepidla2_dataset, print_output=False)
-print(result)
-
-print('AspanFormer_Lepidla3_test')
-result = run_tests(aspanformer_model, lepidla3_dataset, print_output=False)
-print(result)
-
-print('AspanFormer_Lepidla4_test')
-result = run_tests(aspanformer_model, lepidla4_dataset, print_output=False)
-print(result)
-
-print('AspanFormer_Lepidla5_test')
-result = run_tests(aspanformer_model, lepidla5_dataset, print_output=False)
-print(result)
-
+run_tests_all_datasets('ASpanFormer_outdoor', ASpanFormerModel('outdoor'))
+run_tests_all_datasets('ASpanFormer_indoor', ASpanFormerModel('indoor'))
 #---------------------------------------------------------------------------------------
 #AspanFormer testy END
 #---------------------------------------------------------------------------------------
-
-
-
