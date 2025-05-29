@@ -91,16 +91,18 @@ elif developer == "RZ":
     # model = LoFTRRunner()
     model = ASpanFormerModel("outdoor")
 
-    # dataset = GlueDataset()
+    # dataset = GlueDataset(long_dim=1024, dataset_size=200)
     # dataset = JsonDataset(
     #     json_path="dataset/Note/keypoints/note_keypoints.json",
     #     image_dir="dataset/Note/images",
     #     long_dim=256,
+    #     dataset_size=100,
     # )
     dataset = JsonDataset(
         json_path=[f"dataset/Lepidla/lepidla{x}/keypoints/lepidla{x}.json" for x in range(1, 6)],
         image_dir=[f"dataset/Lepidla/lepidla{x}/images" for x in range(1, 6)],
         long_dim=1024,
+        dataset_size=500,
     )
 
     result = run_tests(model, dataset)

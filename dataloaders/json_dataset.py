@@ -1,3 +1,4 @@
+from random import Random
 import json
 import cv2
 import torch
@@ -6,7 +7,13 @@ from pathlib import Path
 
 
 class JsonDataset(torch.utils.data.Dataset):
-    def __init__(self, json_path: str | list[str], image_dir: str | list[str], *, long_dim=1024, device=None):
+    def __init__(self,
+                 json_path: str | list[str],
+                 image_dir: str | list[str],
+                 *,
+                 long_dim=1024,
+                 device=None,
+                 dataset_size=100):
         if isinstance(json_path, str):
             json_path = [json_path]
         if isinstance(image_dir, str):
@@ -26,9 +33,10 @@ class JsonDataset(torch.utils.data.Dataset):
         if device is None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
+        self.dataset_size = dataset_size
 
     def __len__(self):
-        return self.total_image_count - 1  # napr. susedné páry
+        return self.dataset_size
 
     def _get_data(self, idx):
         for dataset_idx, data in enumerate(self.data):
@@ -50,9 +58,13 @@ class JsonDataset(torch.utils.data.Dataset):
         return img_tensor, kps
 
     def __getitem__(self, idx):
-        data1, dataset_idx1 = self._get_data(idx)
+        rand = Random(idx)
+        idx1 = rand.randrange(self.total_image_count)
+        idx2 = rand.randrange(self.total_image_count)
+
+        data1, dataset_idx1 = self._get_data(idx1)
         img1, kp1 = self._load_img_and_kps(data1, self.image_dirs[dataset_idx1])
-        data2, dataset_idx2 = self._get_data(idx + 1)
+        data2, dataset_idx2 = self._get_data(idx2)
         img2, kp2 = self._load_img_and_kps(data2, self.image_dirs[dataset_idx2])
 
         return {

@@ -1,3 +1,4 @@
+from random import Random
 from pathlib import Path
 import numpy as np
 import torch
@@ -7,7 +8,7 @@ import cv2
 class GlueDataset(Dataset):
     ROOT_DIR = "dataset/Glue"
     NPZ_PATH = "dataset/Glue/data.npz"
-    def __init__(self, *, device=None, long_dim=1024):
+    def __init__(self, *, device=None, long_dim=1024, dataset_size=100):
         super().__init__()
 
         self.data = np.load(self.NPZ_PATH)
@@ -17,10 +18,10 @@ class GlueDataset(Dataset):
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
         self.long_dim = long_dim
+        self.dataset_size = dataset_size
 
     def __len__(self):
-        # return self.img_count * self.img_count
-        return 100
+        return self.dataset_size
 
     def _load_image_and_kps(self, idx):
         img = cv2.imread(self.img_dir / self.data['names'][idx].item(), cv2.IMREAD_GRAYSCALE)
@@ -34,8 +35,9 @@ class GlueDataset(Dataset):
         return img_tensor, points
 
     def __getitem__(self, idx):
-        idx1 = idx // self.img_count
-        idx2 = idx % self.img_count
+        rand = Random(idx)
+        idx1 = rand.randrange(self.img_count)
+        idx2 = rand.randrange(self.img_count)
 
         img1, kp1 = self._load_image_and_kps(idx1)
         img2, kp2 = self._load_image_and_kps(idx2)
