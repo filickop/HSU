@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 import time
 
-BINS = np.arange(51, step=2, dtype=float)
+BINS = np.arange(101, step=2, dtype=float)
 # BINS = np.array([0.0, 1.0, 5.0, 10.0, 100.0])
 
 class KeypointModel(ABC):

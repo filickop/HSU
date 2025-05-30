@@ -97,12 +97,11 @@ run_tests_all_datasets(
             'nms_radius': 4,
             'keypoint_threshold': 0.005,
             'max_keypoints': -1,
+            'remove_borders': 4,
         },
         'superglue': {
             'descriptor_dim': 256,
             'weights': 'indoor',
-            'keypoint_encoder': [32, 64, 128, 256],
-            'GNN_layers': ['self', 'cross'] * 9,
             'sinkhorn_iterations': 100,
             'match_threshold': 0.2,
         }
@@ -116,12 +115,11 @@ run_tests_all_datasets(
             'nms_radius': 4,
             'keypoint_threshold': 0.005,
             'max_keypoints': -1,
+            'remove_borders': 4,
         },
         'superglue': {
             'descriptor_dim': 256,
             'weights': 'outdoor',
-            'keypoint_encoder': [32, 64, 128, 256],
-            'GNN_layers': ['self', 'cross'] * 9,
             'sinkhorn_iterations': 100,
             'match_threshold': 0.2,
         }
@@ -135,12 +133,11 @@ run_tests_all_datasets(
             'nms_radius': 5,           # silnejšie potláčanie susedov
             'keypoint_threshold': 0.01,# detekuj len spoľahlivé body
             'max_keypoints': -1,
+            'remove_borders': 4,
         },
         'superglue': {
             'descriptor_dim': 256,
             'weights': 'indoor',
-            'keypoint_encoder': [32, 64, 128, 256],
-            'GNN_layers': ['self', 'cross'] * 6,   # rýchlejšie
             'sinkhorn_iterations': 50,             # rýchlejšie
             'match_threshold': 0.3,
         }
@@ -154,12 +151,11 @@ run_tests_all_datasets(
             'nms_radius': 5,           # silnejšie potláčanie susedov
             'keypoint_threshold': 0.01,# detekuj len spoľahlivé body
             'max_keypoints': -1,
+            'remove_borders': 4,
         },
         'superglue': {
             'descriptor_dim': 256,
             'weights': 'outdoor',
-            'keypoint_encoder': [32, 64, 128, 256],
-            'GNN_layers': ['self', 'cross'] * 6,   # rýchlejšie
             'sinkhorn_iterations': 50,             # rýchlejšie
             'match_threshold': 0.3,
         }
@@ -173,12 +169,11 @@ run_tests_all_datasets(
             'nms_radius': 3,             # viac bodov v hustých oblastiach
             'keypoint_threshold': 0.001, # detekuj aj slabé body
             'max_keypoints': -1,
+            'remove_borders': 4,
         },
         'superglue': {
             'descriptor_dim': 256,
             'weights': 'indoor',
-            'keypoint_encoder': [64, 128, 256, 256],  # hlbší encoder
-            'GNN_layers': ['self', 'cross'] * 12,     # robustnejšie učenie vzťahov
             'sinkhorn_iterations': 150,               # viac iterácií → lepšia optimalizácia
             'match_threshold': 0.1,
         }
@@ -192,12 +187,11 @@ run_tests_all_datasets(
             'nms_radius': 3,             # viac bodov v hustých oblastiach
             'keypoint_threshold': 0.001, # detekuj aj slabé body
             'max_keypoints': -1,
+            'remove_borders': 4,
         },
         'superglue': {
             'descriptor_dim': 256,
             'weights': 'outdoor',
-            'keypoint_encoder': [64, 128, 256, 256],  # hlbší encoder
-            'GNN_layers': ['self', 'cross'] * 12,     # robustnejšie učenie vzťahov
             'sinkhorn_iterations': 150,               # viac iterácií → lepšia optimalizácia
             'match_threshold': 0.1,
         }
